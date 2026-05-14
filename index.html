@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>今天吃什么</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #fff8e1 0%, #ffe0b2 30%, #ffcc80 100%);
+    padding: 20px;
+  }
+
+  .container {
+    background: #fff;
+    border-radius: 28px;
+    padding: 30px 24px 36px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.06);
+    max-width: 460px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .title {
+    font-size: 34px;
+    font-weight: 900;
+    color: #e65100;
+    margin-bottom: 2px;
+    letter-spacing: 3px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: #bf8040;
+    margin-bottom: 16px;
+  }
+
+  .wheel-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+
+  .pointer {
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 36px solid #d84315;
+    z-index: 10;
+    filter: drop-shadow(0 3px 5px rgba(0,0,0,0.3));
+  }
+
+  .pointer::after {
+    content: '';
+    position: absolute;
+    top: -44px;
+    left: -10px;
+    width: 20px;
+    height: 20px;
+    background: #d84315;
+    border-radius: 50%;
+  }
+
+  canvas { display: block; max-width: 100%; height: auto; }
+
+  .btn-spin {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 15px 64px;
+    font-size: 21px;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(135deg, #ff6d00, #d84315);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    letter-spacing: 4px;
+    box-shadow: 0 6px 28px rgba(216, 67, 21, 0.38);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .btn-spin:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 36px rgba(216, 67, 21, 0.5);
+  }
+  .btn-spin:active:not(:disabled) { transform: translateY(0); }
+  .btn-spin:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .overlay.active { opacity: 1; pointer-events: auto; }
+
+  .result-card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 32px 24px 24px;
+    text-align: center;
+    max-width: 300px; width: 90%;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .result-img { width: 140px; height: 140px; margin: 0 auto 14px; display: block; border-radius: 50%; }
+  .result-label { font-size: 14px; color: #999; margin-bottom: 2px; }
+  .result-dish { font-size: 28px; font-weight: 800; color: #d84315; margin-bottom: 18px; }
+
+  .btn-close {
+    padding: 11px 42px;
+    font-size: 16px; font-weight: 700;
+    color: #d84315; background: #fff3e0;
+    border: 2px solid #ffab91; border-radius: 50px;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .btn-close:hover { background: #ffe0b2; }
+
+  .history { margin-top: 18px; font-size: 13px; color: #bf8040; line-height: 1.8; }
+  .history span { font-weight: 700; color: #bf8040; margin: 0 2px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="title">今天吃什么</div>
+  <div class="subtitle">让命运决定你的晚餐</div>
+
+  <div class="wheel-wrapper">
+    <div class="pointer"></div>
+    <canvas id="wheel" width="760" height="760"></canvas>
+  </div>
+
+  <button class="btn-spin" id="btnSpin" onclick="spin()">开 始</button>
+  <div class="history" id="history"></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="result-card">
+    <div class="result-label">今晚吃</div>
+    <img class="result-img" id="resultImg" src="" alt="" />
+    <div class="result-dish" id="resultDish"></div>
+    <button class="btn-close" onclick="closeResult()">再来一次</button>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('wheel');
+const ctx = canvas.getContext('2d');
+
+const dishes = [
+  { name: '滑蛋饭',   en: 'Egg Rice' },
+  { name: '石锅饭',   en: 'Stone Pot Rice' },
+  { name: '麦当劳',   en: 'McDonalds' },
+  { name: '必胜客汉堡', en: 'PizzaHut Burger' },
+  { name: '手工面',   en: 'Handmade Noodles' },
+  { name: '牛肉面',   en: 'Beef Noodles' },
+  { name: '自选菜',   en: 'Buffet Plate' },
+  { name: '轻食',     en: 'Light Meal' },
+  { name: '泰式打抛饭', en: 'Thai Basil Rice' },
+  { name: '意如馄饨',  en: 'Wonton Soup' },
+];
+
+const segColors = [
+  '#FF7043', '#FF8F00', '#FDD835', '#66BB6A',
+  '#42A5F5', '#EC407A', '#AB47BC', '#FFA726',
+  '#26C6DA', '#EF5350',
+];
+
+const N = dishes.length;
+const segAngle = (2 * Math.PI) / N;
+const radius = 342;
+const cx = 380, cy = 380;
+
+let currentAngle = 0;
+let spinning = false;
+let lastResult = null;
+let resultHistory = [];
+let foodImages = []; // pre-generated food illustration data URLs
+
+// ── Food Image Generator ──────────────────────────────────
+
+function genFoodImage(index) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 200;
+  const g = c.getContext('2d');
+
+  // Background circle
+  const bg = segColors[index];
+  g.beginPath();
+  g.arc(100, 100, 94, 0, Math.PI * 2);
+  g.fillStyle = bg;
+  g.fill();
+
+  // Inner lighter circle
+  g.beginPath();
+  g.arc(100, 100, 82, 0, Math.PI * 2);
+  g.fillStyle = lighten(bg, 0.35);
+  g.fill();
+
+  switch (index) {
+    case 0: drawEggRice(g); break;
+    case 1: drawStonePot(g); break;
+    case 2: drawMcDonalds(g); break;
+    case 3: drawBurger(g); break;
+    case 4: drawNoodles(g); break;
+    case 5: drawBeefNoodles(g); break;
+    case 6: drawBuffet(g); break;
+    case 7: drawSalad(g); break;
+    case 8: drawThaiBasil(g); break;
+    case 9: drawWonton(g); break;
+  }
+
+  return c.toDataURL('image/png');
+}
+
+function lighten(hex, amount) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  const l = (v) => Math.min(255, Math.round(v + (255-v) * amount));
+  return `rgb(${l(r)},${l(g)},${l(b)})`;
+}
+
+function darken(hex, amount) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  const d = (v) => Math.max(0, Math.round(v * (1 - amount)));
+  return `rgb(${d(r)},${d(g)},${d(b)})`;
+}
+
+// 1. 滑蛋饭 — yellow egg draping over white rice in a bowl
+function drawEggRice(g) {
+  // Bowl
+  g.fillStyle = '#f5f5f5';
+  g.beginPath(); g.ellipse(100, 128, 68, 48, 0, Math.PI, 0); g.fill();
+  g.fillStyle = '#e0e0e0';
+  g.beginPath(); g.ellipse(100, 128, 74, 52, 0, 0, Math.PI); g.fill();
+  // Rice mound
+  g.fillStyle = '#fffef5';
+  g.beginPath(); g.ellipse(100, 108, 55, 35, 0, Math.PI, 0); g.fill();
+  // Egg drape
+  g.fillStyle = '#f9a825';
+  g.beginPath(); g.ellipse(100, 92, 50, 36, 0, Math.PI * 1.8, Math.PI * 0.2); g.fill();
+  g.fillStyle = '#fdd835';
+  g.beginPath(); g.ellipse(100, 86, 42, 28, 0, 0, Math.PI * 2); g.fill();
+  // Egg shine
+  g.fillStyle = 'rgba(255,255,255,0.5)';
+  g.beginPath(); g.arc(90, 78, 10, 0, Math.PI * 2); g.fill();
+  // Rice texture dots
+  g.fillStyle = '#f5f0e0';
+  for (let i = 0; i < 12; i++) {
+    const rx = 70 + Math.random() * 55;
+    const ry = 108 + Math.random() * 20;
+    g.beginPath(); g.arc(rx, ry, 2.5, 0, Math.PI * 2); g.fill();
+  }
+}
+
+// 2. 石锅饭 — dark stone pot with sizzling rice
+function drawStonePot(g) {
+  // Stone pot
+  g.fillStyle = '#5d4037';
+  g.beginPath(); g.ellipse(100, 130, 66, 48, 0, Math.PI, 0); g.fill();
+  g.fillStyle = '#4e342e';
+  g.beginPath(); g.ellipse(100, 130, 72, 52, 0, 0, Math.PI); g.fill();
+  // Pot rim
+  g.fillStyle = '#795548';
+  g.fillRect(27, 120, 146, 12);
+  g.fillStyle = '#8d6e63';
+  g.beginPath(); g.ellipse(100, 120, 73, 16, 0, 0, Math.PI * 2); g.fill();
+  // Rice
+  g.fillStyle = '#fffef7';
+  g.beginPath(); g.ellipse(100, 108, 58, 30, 0, Math.PI, 0); g.fill();
+  // Mixed toppings (colorful bits)
+  const toppings = ['#ff8a65','#a5d6a7','#ffcc02','#ef9a9a','#ffcc80','#bcaaa4'];
+  for (let i = 0; i < 20; i++) {
+    g.fillStyle = toppings[Math.floor(Math.random() * toppings.length)];
+    const tx = 68 + Math.random() * 64;
+    const ty = 88 + Math.random() * 32;
+    g.beginPath(); g.arc(tx, ty, 2 + Math.random() * 4, 0, Math.PI * 2); g.fill();
+  }
+  // Steam
+  g.strokeStyle = 'rgba(255,255,255,0.6)';
+  g.lineWidth = 3;
+  for (let s = 0; s < 3; s++) {
+    const sx = 75 + s * 22;
+    g.beginPath();
+    g.moveTo(sx, 78);
+    g.quadraticCurveTo(sx - 6, 46, sx + 3, 30);
+    g.stroke();
+  }
+}
+
+// 3. 麦当劳 — burger with iconic style
+function drawMcDonalds(g) {
+  // Bun top
+  g.fillStyle = '#f4a460';
+  g.beginPath(); g.arc(100, 72, 48, Math.PI, 0); g.fill();
+  g.fillStyle = '#e8963e';
+  g.beginPath(); g.arc(100, 72, 48, 0, Math.PI); g.fill();
+  // Sesame seeds
+  g.fillStyle = '#fff8e1';
+  for (let i = 0; i < 8; i++) {
+    const sx = 70 + i * 9;
+    g.beginPath(); g.ellipse(sx, 62, 3, 5, -0.3, 0, Math.PI * 2); g.fill();
+  }
+  // Lettuce
+  g.fillStyle = '#66bb6a';
+  g.beginPath();
+  g.moveTo(52, 72); g.quadraticCurveTo(60, 62, 70, 74);
+  g.quadraticCurveTo(80, 60, 90, 73);
+  g.quadraticCurveTo(100, 58, 110, 74);
+  g.quadraticCurveTo(120, 60, 130, 73);
+  g.quadraticCurveTo(140, 62, 148, 72);
+  g.lineTo(52, 72);
+  g.fill();
+  // Patty
+  g.fillStyle = '#5d4037';
+  g.fillRect(54, 74, 92, 16);
+  g.fillStyle = '#4e342e';
+  g.beginPath(); g.ellipse(100, 74, 46, 6, 0, 0, Math.PI); g.fill();
+  // Cheese
+  g.fillStyle = '#fdd835';
+  g.fillRect(56, 90, 88, 8);
+  g.beginPath();
+  g.moveTo(56, 90); g.lineTo(62, 84); g.lineTo(68, 90);
+  g.lineTo(74, 84); g.lineTo(80, 90); g.lineTo(86, 84);
+  g.lineTo(92, 90); g.lineTo(98, 84); g.lineTo(104, 90);
+  g.lineTo(110, 84); g.lineTo(116, 90); g.lineTo(122, 84);
+  g.lineTo(128, 90); g.lineTo(134, 84); g.lineTo(140, 90);
+  g.lineTo(144, 90);
+  g.fill();
+  // Bun bottom
+  g.fillStyle = '#e8963e';
+  g.fillRect(54, 98, 92, 14);
+  g.beginPath(); g.ellipse(100, 112, 46, 8, 0, 0, Math.PI); g.fill();
+}
+
+// 4. 必胜客汉堡 — taller chicken-style burger
+function drawBurger(g) {
+  // Top bun
+  g.fillStyle = '#f4c069';
+  g.beginPath(); g.arc(100, 60, 46, Math.PI, 0); g.fill();
+  // Herb specks on top
+  g.fillStyle = '#8d6e63';
+  for (let i = 0; i < 5; i++) {
+    g.beginPath(); g.arc(75 + i * 12, 55, 2, 0, Math.PI * 2); g.fill();
+  }
+  // Lettuce
+  g.fillStyle = '#81c784';
+  for (let i = 0; i < 6; i++) {
+    g.beginPath();
+    g.moveTo(54 + i * 18, 60);
+    g.quadraticCurveTo(63 + i * 18, 45, 72 + i * 18, 62);
+    g.fill();
+  }
+  // Tomato
+  g.fillStyle = '#ef5350';
+  g.fillRect(54, 64, 92, 8);
+  g.beginPath(); g.ellipse(100, 64, 46, 4, 0, Math.PI, 0); g.fill();
+  // Chicken patty
+  g.fillStyle = '#deb887';
+  g.fillRect(54, 72, 92, 14);
+  g.fillStyle = '#c9a96e';
+  g.beginPath(); g.ellipse(100, 72, 46, 6, 0, Math.PI, 0); g.fill();
+  // Sauce
+  g.fillStyle = '#ffcc80';
+  g.fillRect(58, 86, 84, 6);
+  // Bottom bun
+  g.fillStyle = '#e4a84b';
+  g.fillRect(54, 92, 92, 14);
+  g.beginPath(); g.ellipse(100, 106, 46, 9, 0, 0, Math.PI); g.fill();
+}
+
+// 5. 手工面 — wide bowl with thick irregular noodles
+function drawNoodles(g) {
+  // Bowl
+  g.fillStyle = '#fff3e0';
+  g.beginPath(); g.ellipse(100, 130, 68, 46, 0, Math.PI, 0); g.fill();
+  g.fillStyle = '#ffe0b2';
+  g.beginPath(); g.ellipse(100, 130, 74, 50, 0, 0, Math.PI); g.fill();
+  // Broth
+  g.fillStyle = '#fff8e7';
+  g.beginPath(); g.ellipse(100, 118, 62, 32, 0, Math.PI, 0); g.fill();
+  // Noodles (thick, wavy)
+  g.strokeStyle = '#f5deb3';
+  g.lineWidth = 6;
+  g.lineCap = 'round';
+  for (let n = 0; n < 6; n++) {
+    g.beginPath();
+    const ny = 90 + n * 12;
+    g.moveTo(58, ny);
+    g.quadraticCurveTo(80, ny - 10, 100, ny + 4);
+    g.quadraticCurveTo(120, ny - 6, 142, ny);
+    g.stroke();
+  }
+  // Some darker noodle highlights
+  g.strokeStyle = '#e8c580';
+  g.lineWidth = 3;
+  for (let n = 0; n < 4; n++) {
+    g.beginPath();
+    const ny = 96 + n * 14;
+    g.moveTo(62, ny + 2);
+    g.quadraticCurveTo(82, ny - 5, 100, ny + 6);
+    g.quadraticCurveTo(118, ny - 3, 138, ny + 1);
+    g.stroke();
+  }
+  // Green onion
+  g.fillStyle = '#66bb6a';
+  for (let o = 0; o < 5; o++) {
+    g.beginPath(); g.arc(70 + o * 15, 104, 5, 0, Math.PI); g.fill();
+  }
+}
+
+// 6. 牛肉面 — dark broth, beef chunks, noodles
+function drawBeefNoodles(g) {
+  // Bowl
+  g.fillStyle = '#efebe9';
+  g.beginPath(); g.ellipse(100, 132, 68, 48, 0, Math.PI, 0); g.fill();
+  g.fillStyle = '#d7ccc8';
+  g.beginPath(); g.ellipse(100, 132, 74, 52, 0, 0, Math.PI); g.fill();
+  // Dark broth
+  g.fillStyle = '#8d4e2c';
+  g.beginPath(); g.ellipse(100, 116, 62, 32, 0, Math.PI, 0); g.fill();
+  // Noodles peeking through
+  g.strokeStyle = '#deb887';
+  g.lineWidth = 4;
+  for (let n = 0; n < 5; n++) {
+    g.beginPath();
+    g.moveTo(56, 100 + n * 10);
+    g.quadraticCurveTo(80, 96 + n * 10, 100, 104 + n * 10);
+    g.quadraticCurveTo(120, 98 + n * 10, 144, 102 + n * 10);
+    g.stroke();
+  }
+  // Beef chunks
+  g.fillStyle = '#5d4037';
+  g.beginPath(); g.ellipse(78, 104, 14, 10, 0.2, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.ellipse(120, 98, 16, 11, -0.1, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#6d4c41';
+  g.beginPath(); g.ellipse(96, 112, 13, 9, 0, 0, Math.PI * 2); g.fill();
+  // Green garnish
+  g.fillStyle = '#a5d6a7';
+  g.beginPath(); g.ellipse(70, 88, 12, 5, -0.4, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.ellipse(130, 86, 10, 4, 0.3, 0, Math.PI * 2); g.fill();
+  // Chili oil
+  g.fillStyle = 'rgba(244,67,54,0.5)';
+  g.beginPath(); g.arc(100, 106, 20, 0, Math.PI * 2); g.fill();
+}
+
+// 7. 自选菜 — divided plate with colorful sections
+function drawBuffet(g) {
+  // Plate
+  g.fillStyle = '#fafafa';
+  g.beginPath(); g.ellipse(100, 110, 74, 56, 0, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = '#e0e0e0';
+  g.lineWidth = 3;
+  g.beginPath(); g.ellipse(100, 110, 64, 48, 0, 0, Math.PI * 2); g.stroke();
+  // Divided sections
+  g.strokeStyle = '#d0d0d0';
+  g.lineWidth = 2;
+  g.beginPath(); g.moveTo(100, 62); g.lineTo(100, 158); g.stroke();
+  g.beginPath(); g.moveTo(36, 110); g.lineTo(100, 110); g.stroke();
+  // Section 1: meat (top-left)
+  g.fillStyle = '#ef9a9a';
+  g.beginPath(); g.arc(72, 86, 18, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#e57373';
+  g.beginPath(); g.arc(72, 86, 10, 0, Math.PI * 1.2); g.fill();
+  // Section 2: veggies (top-right)
+  g.fillStyle = '#a5d6a7';
+  g.beginPath(); g.ellipse(130, 82, 16, 14, 0.1, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#66bb6a';
+  g.beginPath(); g.moveTo(125, 82); g.lineTo(130, 66); g.lineTo(135, 82); g.fill();
+  // Section 3: rice (bottom-left)
+  g.fillStyle = '#fff9c4';
+  g.beginPath(); g.ellipse(68, 128, 22, 16, 0, 0, Math.PI * 2); g.fill();
+  // Section 4: tofu/egg (bottom-right)
+  g.fillStyle = '#ffe082';
+  g.beginPath(); g.ellipse(132, 124, 18, 14, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#ffcc80';
+  g.beginPath(); g.rect(124, 116, 16, 16); g.fill();
+}
+
+// 8. 轻食 — salad bowl with greens
+function drawSalad(g) {
+  // Bowl
+  g.fillStyle = '#e8f5e9';
+  g.beginPath(); g.ellipse(100, 128, 66, 46, 0, Math.PI, 0); g.fill();
+  g.fillStyle = '#c8e6c9';
+  g.beginPath(); g.ellipse(100, 128, 72, 50, 0, 0, Math.PI); g.fill();
+  // Greens (multiple leaf shapes)
+  const greens = ['#66bb6a', '#81c784', '#4caf50', '#a5d6a7', '#388e3c'];
+  for (let l = 0; l < 8; l++) {
+    g.fillStyle = greens[l % greens.length];
+    const lx = 62 + l * 11;
+    const ly = 85 + (l % 3) * 12;
+    g.beginPath();
+    g.ellipse(lx, ly, 14, 20, 0.3 + l * 0.2, 0, Math.PI * 2);
+    g.fill();
+  }
+  // Cherry tomatoes
+  g.fillStyle = '#ef5350';
+  g.beginPath(); g.arc(85, 80, 9, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.arc(118, 86, 8, 0, Math.PI * 2); g.fill();
+  // Corn
+  g.fillStyle = '#ffee58';
+  g.beginPath(); g.arc(100, 74, 7, 0, Math.PI * 2); g.fill();
+  // Dressing drizzle
+  g.strokeStyle = 'rgba(255,255,255,0.5)';
+  g.lineWidth = 2;
+  g.beginPath();
+  g.moveTo(62, 76);
+  g.quadraticCurveTo(80, 66, 100, 78);
+  g.quadraticCurveTo(118, 88, 138, 74);
+  g.stroke();
+}
+
+// 9. 泰式打抛饭 — rice with basil minced pork and fried egg
+function drawThaiBasil(g) {
+  // Plate
+  g.fillStyle = '#fafafa';
+  g.beginPath(); g.ellipse(100, 118, 72, 50, 0, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = '#e0e0e0';
+  g.lineWidth = 2;
+  g.beginPath(); g.ellipse(100, 118, 65, 44, 0, 0, Math.PI * 2); g.stroke();
+  // Rice base
+  g.fillStyle = '#fffef5';
+  g.beginPath(); g.ellipse(100, 122, 52, 36, 0, Math.PI, 0); g.fill();
+  // Minced pork
+  g.fillStyle = '#a1887f';
+  g.beginPath(); g.ellipse(100, 108, 48, 24, 0, Math.PI, 0); g.fill();
+  g.fillStyle = '#8d6e63';
+  for (let i = 0; i < 25; i++) {
+    const mx = 65 + Math.random() * 70;
+    const my = 100 + Math.random() * 20;
+    g.beginPath(); g.arc(mx, my, 1.5 + Math.random() * 2, 0, Math.PI * 2); g.fill();
+  }
+  // Basil leaves
+  g.fillStyle = '#43a047';
+  for (let b = 0; b < 7; b++) {
+    const bx = 62 + b * 12;
+    const by = 92 + (b % 2) * 10;
+    g.beginPath();
+    g.ellipse(bx, by, 8, 5, b * 0.5, 0, Math.PI * 2);
+    g.fill();
+  }
+  // Fried egg on top
+  g.fillStyle = '#fff';
+  g.beginPath(); g.ellipse(100, 84, 26, 20, 0, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = '#e0d8c0';
+  g.lineWidth = 2;
+  g.beginPath(); g.ellipse(100, 84, 26, 20, 0, 0, Math.PI * 2); g.stroke();
+  // Yolk
+  g.fillStyle = '#f9a825';
+  g.beginPath(); g.arc(100, 84, 10, 0, Math.PI * 2); g.fill();
+  // Yolk shine
+  g.fillStyle = 'rgba(255,255,255,0.5)';
+  g.beginPath(); g.arc(96, 80, 4, 0, Math.PI * 2); g.fill();
+  // Chili flakes
+  g.fillStyle = '#e53935';
+  for (let c = 0; c < 6; c++) {
+    g.beginPath();
+    g.arc(75 + c * 10, 115 + (c % 2) * 5, 2, 0, Math.PI * 2);
+    g.fill();
+  }
+}
+
+// 10. 意如馄饨 — wontons in soup
+function drawWonton(g) {
+  // Bowl
+  g.fillStyle = '#f5f5f5';
+  g.beginPath(); g.ellipse(100, 128, 66, 46, 0, Math.PI, 0); g.fill();
+  g.fillStyle = '#eeeeee';
+  g.beginPath(); g.ellipse(100, 128, 72, 50, 0, 0, Math.PI); g.fill();
+  // Soup
+  g.fillStyle = '#fff8e7';
+  g.beginPath(); g.ellipse(100, 114, 60, 30, 0, Math.PI, 0); g.fill();
+  // Wontons
+  for (let w = 0; w < 5; w++) {
+    const wx = 70 + w * 16;
+    const wy = 100 + (w % 2) * 16;
+    // Wonton wrapper
+    g.fillStyle = '#fffef7';
+    g.beginPath();
+    g.moveTo(wx, wy - 10);
+    g.lineTo(wx + 16, wy + 4);
+    g.lineTo(wx, wy + 10);
+    g.lineTo(wx - 8, wy + 2);
+    g.closePath();
+    g.fill();
+    g.strokeStyle = '#e8dcc8';
+    g.lineWidth = 1.5;
+    g.stroke();
+    // Fold lines
+    g.strokeStyle = '#f0e8d8';
+    g.lineWidth = 1;
+    g.beginPath();
+    g.moveTo(wx, wy - 4);
+    g.lineTo(wx + 6, wy + 2);
+    g.stroke();
+  }
+  // Seaweed
+  g.fillStyle = '#2e7d32';
+  g.beginPath(); g.ellipse(120, 98, 14, 5, 0.1, 0, Math.PI * 2); g.fill();
+  // Green onion garnish
+  g.fillStyle = '#66bb6a';
+  for (let o = 0; o < 6; o++) {
+    g.beginPath(); g.arc(65 + o * 14, 98, 3, 0, Math.PI * 2); g.fill();
+  }
+  // Steam
+  g.strokeStyle = 'rgba(200,200,200,0.4)';
+  g.lineWidth = 2.5;
+  for (let s = 0; s < 3; s++) {
+    g.beginPath();
+    const sx = 80 + s * 18;
+    g.moveTo(sx, 82);
+    g.quadraticCurveTo(sx - 5, 58, sx + 3, 42);
+    g.stroke();
+  }
+}
+
+// ── Wheel Drawing ─────────────────────────────────────────
+
+const foodImgObjs = [];
+
+function preloadImages() {
+  return Promise.all(dishes.map((_, i) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => { foodImgObjs[i] = img; resolve(); };
+      img.onerror = () => { foodImgObjs[i] = null; resolve(); };
+      img.src = genFoodImage(i);
+    });
+  }));
+}
+
+function drawWheel() {
+  ctx.clearRect(0, 0, 760, 760);
+
+  for (let i = 0; i < N; i++) {
+    const start = -Math.PI / 2 + currentAngle + i * segAngle;
+    const end = start + segAngle;
+
+    // Colored segment
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, start, end);
+    ctx.closePath();
+    ctx.fillStyle = segColors[i];
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    const mid = start + segAngle / 2;
+    const imgR = radius * 0.50;
+    const textR = radius * 0.84;
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(mid);
+
+    // Food image
+    const img = foodImgObjs[i];
+    if (img) {
+      ctx.save();
+      // Draw circular clipped image
+      ctx.beginPath();
+      ctx.arc(imgR, 0, 44, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(img, imgR - 44, -44, 88, 88);
+      ctx.restore();
+      // Image border
+      ctx.beginPath();
+      ctx.arc(imgR, 0, 44, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+
+    // Dish name
+    ctx.font = 'bold 19px "PingFang SC", "Microsoft YaHei", sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.shadowColor = 'rgba(0,0,0,0.35)';
+    ctx.shadowBlur = 4;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(dishes[i].name, textR, 0);
+    ctx.shadowBlur = 0;
+
+    ctx.restore();
+  }
+
+  // Center hub
+  const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 56);
+  grad.addColorStop(0, '#fff');
+  grad.addColorStop(1, '#f0f0f0');
+  ctx.beginPath();
+  ctx.arc(cx, cy, 54, 0, 2 * Math.PI);
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.strokeStyle = '#ddd';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  ctx.font = 'bold 22px "PingFang SC", "Microsoft YaHei", sans-serif';
+  ctx.fillStyle = '#d84315';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('吃', cx, cy);
+}
+
+// ── Spin Logic ────────────────────────────────────────────
+
+// Crypto-grade random: [0, max) integer and [0, 1) float
+function cryptoRandomInt(max) {
+  const buf = new Uint32Array(1);
+  crypto.getRandomValues(buf);
+  return buf[0] % max;
+}
+
+function cryptoRandomFloat() {
+  const buf = new Uint32Array(1);
+  crypto.getRandomValues(buf);
+  return buf[0] / 4294967296;
+}
+
+function spin() {
+  if (spinning) return;
+  spinning = true;
+  document.getElementById('btnSpin').disabled = true;
+
+  // Pick dish index first — guarantees uniform distribution
+  const selectedIndex = cryptoRandomInt(N);
+
+  // Random jitter within segment (±35% of half-segment) for natural landing
+  const jitter = (cryptoRandomFloat() - 0.5) * segAngle * 0.7;
+
+  // The pointer is at top (-π/2). For dish i to be selected, we need:
+  //   (-targetAngle mod 2π) ∈ [i·segAngle, (i+1)·segAngle]
+  // Aim for center of segment + jitter:
+  const targetInSegment = selectedIndex * segAngle + segAngle / 2 + jitter;
+
+  const TWO_PI = 2 * Math.PI;
+
+  // Ensure targetAngle > currentAngle and add 8-12 extra full rotations
+  const extraFullRotations = 8 + cryptoRandomInt(5);
+  const minK = Math.ceil((currentAngle + targetInSegment) / TWO_PI);
+  const targetAngle = (minK + extraFullRotations) * TWO_PI - targetInSegment;
+
+  const spinStart = performance.now();
+  const startAngle = currentAngle;
+  const duration = 4200 + cryptoRandomFloat() * 1000;
+
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  function animate(now) {
+    const elapsed = now - spinStart;
+    const progress = Math.min(elapsed / duration, 1);
+    currentAngle = startAngle + (targetAngle - startAngle) * easeOutCubic(progress);
+    drawWheel();
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      currentAngle = targetAngle;
+      spinning = false;
+      document.getElementById('btnSpin').disabled = false;
+      showResult(selectedIndex);
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+function showResult(idx) {
+  const dish = dishes[idx];
+  document.getElementById('resultImg').src = foodImgObjs[idx] ? foodImgObjs[idx].src : '';
+  document.getElementById('resultDish').textContent = dish.name;
+  document.getElementById('overlay').classList.add('active');
+  lastResult = dish;
+  resultHistory.push(dish.name);
+  if (resultHistory.length > 8) resultHistory.shift();
+  updateHistory();
+}
+
+function closeResult() {
+  document.getElementById('overlay').classList.remove('active');
+}
+
+function updateHistory() {
+  const el = document.getElementById('history');
+  if (resultHistory.length === 0) {
+    el.innerHTML = '';
+    return;
+  }
+  const items = resultHistory.map((name, i) => {
+    const highlight = i === resultHistory.length - 1 ? ' style="color:#d84315;font-weight:900"' : '';
+    return '<span' + highlight + '>' + name + '</span>';
+  });
+  el.innerHTML = '历史记录：' + items.join(' → ');
+}
+
+document.getElementById('overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeResult();
+});
+
+// ── Init ──────────────────────────────────────────────────
+
+preloadImages().then(() => {
+  drawWheel();
+  console.log('✅ All food images generated and loaded.');
+});
+</script>
+</body>
+</html>
