@@ -64,6 +64,15 @@
         /* 选择文字 */
         ::selection { background: rgba(124, 58, 237, 0.4); color: #fff; }
 
+        /* 图片加载渐入 */
+        img {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        img.loaded {
+            opacity: 1;
+        }
+
         /* ========================================
            字体层级
            ======================================== */
@@ -929,7 +938,7 @@
 
         <!-- Hero 右侧：毕业照 -->
         <div class="hero-photo reveal">
-            <img src="life-photos/毕业照.jpg" alt="毕业照" loading="lazy">
+            <img src="life-photos/毕业照.jpg" alt="毕业照" fetchpriority="high">
         </div>
 
         <!-- Hero 右侧装饰：抽象声波/流线 -->
@@ -1223,6 +1232,16 @@
                     el.classList.add('visible');
                 }
             });
+        });
+
+        // —— 图片加载渐入 ——
+        document.querySelectorAll('img').forEach(img => {
+            if (img.complete) {
+                img.classList.add('loaded');
+            } else {
+                img.addEventListener('load', () => img.classList.add('loaded'));
+                img.addEventListener('error', () => img.classList.add('loaded')); // 出错也显示
+            }
         });
     </script>
 </body>
