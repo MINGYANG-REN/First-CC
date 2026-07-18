@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任铭杨 — 个人主页</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* ========================================
+           CSS 变量 — 色彩系统
+           ======================================== */
+        :root {
+            --bg-deep: #0a0812;
+            --bg-primary: #0f0c1a;
+            --bg-card: #15102a;
+            --bg-card-hover: #1d1638;
+            --purple-deep: #5b21b6;
+            --purple-mid: #7c3aed;
+            --purple-light: #a78bfa;
+            --purple-ghost: #c4b5fd;
+            --accent-gold: #c4a35a;
+            --accent-gold-light: #d4b978;
+            --text-primary: #f0e6ff;
+            --text-secondary: #b0a0cc;
+            --text-muted: #6b5f82;
+            --border-subtle: rgba(167, 139, 250, 0.12);
+            --border-gold: rgba(196, 163, 90, 0.3);
+            --glass-bg: rgba(15, 12, 26, 0.75);
+            --glass-border: rgba(167, 139, 250, 0.1);
+        }
+
+        /* ========================================
+           基础重置 & 全局样式
+           ======================================== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
+            line-height: 1.7;
+            overflow-x: hidden;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% 0%, rgba(91, 33, 182, 0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 50% at 85% 40%, rgba(124, 58, 237, 0.05) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 15% 75%, rgba(91, 33, 182, 0.06) 0%, transparent 60%),
+                var(--bg-deep);
+            background-attachment: fixed;
+        }
+
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-deep); }
+        ::-webkit-scrollbar-thumb { background: var(--purple-deep); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--purple-mid); }
+
+        /* 选择文字 */
+        ::selection { background: rgba(124, 58, 237, 0.4); color: #fff; }
+
+        /* ========================================
+           字体层级
+           ======================================== */
+        .serif { font-family: 'Noto Serif SC', 'SimSun', 'STSong', serif; }
+
+        h1, h2, h3, .section-title { font-family: 'Noto Serif SC', 'SimSun', 'STSong', serif; }
+
+        /* ========================================
+           导航栏
+           ======================================== */
+        .nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            padding: 0 64px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--glass-border);
+            transition: background 0.3s, border-color 0.3s;
+        }
+        .nav.scrolled {
+            background: rgba(10, 8, 18, 0.92);
+            border-bottom-color: rgba(167, 139, 250, 0.18);
+        }
+
+        .nav-logo {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .nav-logo .logo-mark {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--purple-mid), var(--purple-deep));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 0;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+        }
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            transition: color 0.3s;
+            position: relative;
+        }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px; left: 0; right: 0;
+            height: 1px;
+            background: var(--accent-gold);
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+        .nav-links a:hover { color: var(--text-primary); }
+        .nav-links a:hover::after { transform: scaleX(1); }
+
+        /* ========================================
+           Hero 首屏
+           ======================================== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 120px 64px 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Hero 背景装饰 */
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -30%; right: -15%;
+            width: 700px; height: 700px;
+            background: radial-gradient(circle, rgba(91, 33, 182, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -10%; left: -10%;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.1) 0%, transparent 60%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 550px;
+        }
+
+        .hero-greeting {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--accent-gold);
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .hero-name {
+            font-size: clamp(3.5rem, 7vw, 6rem);
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: 0.02em;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        .hero-name .highlight {
+            background: linear-gradient(135deg, var(--purple-light), var(--accent-gold-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-tagline {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-top: 24px;
+            line-height: 1.8;
+            max-width: 480px;
+        }
+        .hero-tagline .accent {
+            color: var(--accent-gold);
+        }
+
+        /* 右侧毕业照 — 大幅背景 */
+        .hero-photo {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 50%;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .hero-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: 30% center;
+        }
+        /* 左侧渐变遮罩，让照片融入背景 */
+        .hero-photo::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right,
+                var(--bg-deep) 0%,
+                rgba(10, 8, 18, 0.85) 15%,
+                rgba(10, 8, 18, 0.4) 40%,
+                rgba(10, 8, 18, 0.1) 70%,
+                transparent 100%
+            );
+            pointer-events: none;
+        }
+        /* 底部渐变 */
+        .hero-photo::before {
+            content: '';
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
+            height: 120px;
+            background: linear-gradient(to top, var(--bg-deep), transparent);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* 右侧装饰 SVG */
+        .hero-decoration {
+            position: absolute;
+            right: 5%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 420px;
+            height: 480px;
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 滚动指示器 */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            animation: float 2s ease-in-out infinite;
+            z-index: 1;
+        }
+        .scroll-indicator .line {
+            width: 1px;
+            height: 40px;
+            background: linear-gradient(to bottom, var(--purple-mid), transparent);
+        }
+        @keyframes float {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(8px); }
+        }
+
+        /* ========================================
+           通用区块样式
+           ======================================== */
+        .section {
+            padding: 120px 64px;
+            position: relative;
+        }
+        .section-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--accent-gold);
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+        .section-title {
+            font-size: 2.85rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+        .section-desc {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 560px;
+            line-height: 1.8;
+        }
+
+        /* 滚动渐入动画 + 交错延迟 */
+        .reveal {
+            opacity: 0;
+            transform: translateY(48px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            transition-delay: var(--delay, 0ms);
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 呼吸光效动画 */
+        @keyframes breathe {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+        }
+        @keyframes pulse-gold {
+            0%, 100% { opacity: 0.5; transform: scaleX(1); }
+            50% { opacity: 0.9; transform: scaleX(1.15); }
+        }
+        @keyframes subtle-rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .gold-divider {
+            width: 60px;
+            height: 2px;
+            background: var(--accent-gold);
+            margin: 40px 0;
+            opacity: 0.6;
+            animation: pulse-gold 4s ease-in-out infinite;
+            transform-origin: left center;
+        }
+
+        /* ========================================
+           教育背景区块
+           ======================================== */
+        .education-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+            max-width: 1200px;
+            margin: 60px auto 0;
+        }
+
+        .edu-text {
+            padding-right: 20px;
+        }
+        .edu-year {
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            color: var(--purple-light);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+        .edu-school-name {
+            font-size: 2.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: 0.03em;
+        }
+        .edu-major {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 8px 20px;
+            border: 1px solid var(--border-gold);
+            border-radius: 999px;
+            font-size: 0.875rem;
+            color: var(--accent-gold);
+            letter-spacing: 0.05em;
+        }
+        .edu-detail {
+            margin-top: 28px;
+            color: var(--text-secondary);
+            line-height: 1.9;
+            font-size: 1.05rem;
+        }
+
+        .edu-images {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .edu-images .edu-image-wrapper {
+            aspect-ratio: 3/2;
+        }
+        .edu-image-wrapper {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            aspect-ratio: 4/3;
+        }
+        .edu-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 16px;
+            transition: transform 0.6s;
+        }
+        .edu-image-wrapper:hover img {
+            transform: scale(1.04);
+        }
+        .edu-image-wrapper::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(91, 33, 182, 0.25), transparent 60%);
+            pointer-events: none;
+        }
+        /* 图片后的装饰光晕 */
+        .edu-image-wrapper::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(167, 139, 250, 0.3), rgba(196, 163, 90, 0.2));
+            z-index: -1;
+            filter: blur(12px);
+            opacity: 0.5;
+        }
+
+        /* ========================================
+           兴趣爱好区块
+           ======================================== */
+        .hobbies-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            max-width: 1200px;
+            margin: 60px auto 0;
+        }
+
+        .hobby-card {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            aspect-ratio: 3/4;
+            cursor: pointer;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        /* 第二张卡片向上偏移，打破单调网格 */
+        .hobby-card:nth-child(2) {
+            transform: translateY(-30px);
+        }
+        .hobby-card:hover {
+            transform: translateY(-12px);
+        }
+        .hobby-card:nth-child(2):hover {
+            transform: translateY(-42px);
+        }
+
+        .hobby-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .hobby-card:hover img {
+            transform: scale(1.08);
+        }
+
+        .hobby-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to top,
+                rgba(10, 8, 18, 0.92) 0%,
+                rgba(15, 12, 26, 0.5) 40%,
+                rgba(91, 33, 182, 0.2) 70%,
+                transparent 100%
+            );
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 36px 28px;
+            transition: background 0.4s;
+        }
+        .hobby-card:hover .hobby-overlay {
+            background: linear-gradient(
+                to top,
+                rgba(10, 8, 18, 0.85) 0%,
+                rgba(15, 12, 26, 0.35) 40%,
+                rgba(124, 58, 237, 0.15) 70%,
+                transparent 100%
+            );
+        }
+
+        .hobby-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+        .hobby-name {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            color: #fff;
+        }
+        .hobby-desc {
+            font-size: 0.85rem;
+            color: var(--purple-ghost);
+            margin-top: 6px;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.4s, transform 0.4s;
+        }
+        .hobby-card:hover .hobby-desc {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* 金色下划线 */
+        .hobby-name::after {
+            content: '';
+            display: block;
+            width: 32px;
+            height: 2px;
+            background: var(--accent-gold);
+            margin-top: 10px;
+            transition: width 0.4s;
+        }
+        .hobby-card:hover .hobby-name::after {
+            width: 56px;
+        }
+
+        /* ========================================
+           乐队经历 — 核心亮点区
+           ======================================== */
+        .band-section {
+            padding: 140px 64px 100px;
+            background:
+                radial-gradient(ellipse 60% 50% at 30% 50%, rgba(91, 33, 182, 0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 40% at 75% 30%, rgba(196, 163, 90, 0.06) 0%, transparent 60%),
+                var(--bg-primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 背景装饰：隐约的五线谱线条 */
+        .band-section::before {
+            content: '';
+            position: absolute;
+            left: 0; right: 0; top: 50%;
+            transform: translateY(-50%);
+            height: 300px;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent,
+                transparent 38px,
+                rgba(167, 139, 250, 0.03) 38px,
+                rgba(167, 139, 250, 0.03) 40px
+            );
+            pointer-events: none;
+            mask-image: radial-gradient(ellipse 80% 50% at 50% 50%, black 30%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 50%, black 30%, transparent 70%);
+        }
+
+        .band-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .band-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 60px;
+            gap: 40px;
+        }
+        .band-header .band-title-group {
+            flex-shrink: 0;
+        }
+        .band-header .section-label {
+            margin-bottom: 8px;
+        }
+        .band-header .section-title {
+            font-size: 3.2rem;
+            margin-bottom: 0;
+            line-height: 1.1;
+        }
+        .band-header .band-accent-line {
+            flex-grow: 1;
+            height: 1px;
+            background: linear-gradient(to right, var(--accent-gold), transparent);
+            margin-bottom: 16px;
+        }
+
+        .band-story {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: start;
+            margin-bottom: 80px;
+        }
+        .band-narrative {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            line-height: 2;
+        }
+        .band-narrative p + p {
+            margin-top: 20px;
+        }
+        .band-quote {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1.5rem;
+            color: var(--accent-gold);
+            line-height: 1.6;
+            font-style: italic;
+            padding-left: 24px;
+            border-left: 2px solid var(--accent-gold);
+        }
+
+        /* 乐队照片画廊 — 单行四列 */
+        .band-gallery {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+        .band-gallery .gallery-item {
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            aspect-ratio: 3/4;
+        }
+        .band-gallery .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 35%;
+            transition: transform 0.5s;
+        }
+        .band-gallery .gallery-item:hover img {
+            transform: scale(1.06);
+        }
+        .band-gallery .gallery-item::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 12px;
+            background: linear-gradient(to top, rgba(10, 8, 18, 0.5), transparent 50%);
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .band-gallery .gallery-item:hover::after {
+            opacity: 0.3;
+        }
+
+        /* ========================================
+           生活剪影
+           ======================================== */
+        .mbti-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin: 36px auto 0;
+            padding: 12px 28px;
+            border: 1px solid var(--border-gold);
+            border-radius: 999px;
+            width: fit-content;
+            background: rgba(196, 163, 90, 0.06);
+        }
+        .mbti-tag {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .mbti-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.03em;
+        }
+
+        .life-gallery {
+            display: flex;
+            justify-content: center;
+            gap: 28px;
+            max-width: 960px;
+            margin: 60px auto 0;
+        }
+        .life-gallery .life-photo {
+            flex: 0 1 280px;
+            min-width: 0;
+        }
+        .life-photo {
+            border-radius: 14px;
+            overflow: hidden;
+            aspect-ratio: 1;
+            position: relative;
+            cursor: pointer;
+        }
+        .life-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s, filter 0.5s;
+            filter: brightness(0.85);
+        }
+        .life-photo:hover img {
+            transform: scale(1.06);
+            filter: brightness(1.05);
+        }
+        .life-photo .photo-label {
+            position: absolute;
+            bottom: 14px;
+            left: 14px;
+            font-size: 0.8rem;
+            color: #fff;
+            letter-spacing: 0.05em;
+            z-index: 1;
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 0.3s, transform 0.3s;
+            font-weight: 500;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+        }
+        .life-photo:hover .photo-label {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .life-photo::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 14px;
+            background: linear-gradient(to top, rgba(10, 8, 18, 0.7) 0%, transparent 50%);
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .life-photo:hover::after {
+            opacity: 0.5;
+        }
+
+        /* ========================================
+           联系方式
+           ======================================== */
+        .contact-section {
+            padding: 80px 64px 60px;
+            text-align: center;
+            position: relative;
+        }
+        .contact-grid {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            max-width: 700px;
+            margin: 40px auto 0;
+        }
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 28px;
+            border-radius: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            transition: border-color 0.3s, background 0.3s;
+            cursor: default;
+        }
+        .contact-item:hover {
+            border-color: var(--border-gold);
+            background: var(--bg-card-hover);
+        }
+        .contact-icon {
+            font-size: 1.4rem;
+        }
+        .contact-info {
+            text-align: left;
+        }
+        .contact-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+        }
+        .contact-value {
+            font-size: 1rem;
+            color: var(--text-primary);
+            letter-spacing: 0.03em;
+            font-weight: 500;
+        }
+
+        /* ========================================
+           页脚
+           ======================================== */
+        .footer {
+            padding: 48px 64px;
+            text-align: center;
+            border-top: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            letter-spacing: 0.06em;
+        }
+        .footer .footer-accent {
+            color: var(--accent-gold);
+        }
+
+
+        /* ========================================
+           响应式 — 大屏优化
+           ======================================== */
+        @media (min-width: 1800px) {
+            .section { padding: 160px 120px; }
+            .hero { padding: 120px 120px 80px; }
+            .band-section { padding: 180px 120px; }
+            .nav { padding: 0 120px; }
+            .education-grid, .hobbies-grid, .band-inner, .life-gallery {
+                max-width: 1400px;
+            }
+        }
+
+        @media (max-width: 1280px) {
+            .hero-decoration { width: 320px; height: 380px; opacity: 0.4; }
+            .hero-photo { width: 48%; }
+            .band-gallery { gap: 12px; }
+        }
+
+        @media (max-width: 1024px) {
+            .section { padding: 80px 40px; }
+            .hero { padding: 100px 40px 60px; min-height: auto; }
+            .hero-name { font-size: 3rem; }
+            .hero-decoration { display: none; }
+            .hero-photo { display: none; }
+            .education-grid { grid-template-columns: 1fr; gap: 40px; }
+            .edu-images { order: -1; }
+            .hobbies-grid { grid-template-columns: 1fr 1fr; }
+            .hobby-card:nth-child(2) { transform: none; }
+            .hobby-card:nth-child(2):hover { transform: translateY(-12px); }
+            .hobby-card { aspect-ratio: 4/5; }
+            .band-story { grid-template-columns: 1fr; gap: 40px; }
+            .band-gallery { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .band-gallery .gallery-item { aspect-ratio: 4/5; }
+            .band-header { flex-direction: column; align-items: flex-start; }
+            .band-header .band-accent-line { display: none; }
+            .life-gallery { flex-wrap: wrap; gap: 16px; }
+            .life-gallery .life-photo { flex: 0 1 220px; }
+            .contact-grid { gap: 24px; }
+            .nav-links { gap: 24px; }
+        }
+
+        @media (max-width: 640px) {
+            .nav { padding: 0 20px; }
+            .hero { padding: 100px 20px 40px; }
+            .section { padding: 60px 20px; }
+            .section-title { font-size: 2rem; }
+            .band-section { padding: 80px 20px; }
+            .band-header .section-title { font-size: 2rem; }
+            .hobbies-grid { grid-template-columns: 1fr; }
+            .life-gallery { flex-wrap: wrap; gap: 10px; }
+            .life-gallery .life-photo { flex: 0 1 160px; }
+            .band-gallery { grid-template-columns: 1fr; }
+            .band-gallery .gallery-item { aspect-ratio: 4/3; }
+            .education-grid { gap: 30px; }
+            .contact-grid { flex-direction: column; align-items: center; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========================================
+    导航栏
+    ======================================== -->
+    <nav class="nav" id="nav">
+        <a href="#" class="nav-logo">
+            <span class="logo-mark">RMY</span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="#about">关于</a></li>
+            <li><a href="#hobbies">爱好</a></li>
+            <li><a href="#band">乐队</a></li>
+            <li><a href="#life">生活</a></li>
+        </ul>
+    </nav>
+
+    <!-- ========================================
+    Hero 首屏
+    ======================================== -->
+    <section class="hero" id="home">
+        <div class="hero-content reveal">
+            <p class="hero-greeting">Hello, I'm</p>
+            <h1 class="hero-name">
+                <span class="highlight">任铭杨</span>
+            </h1>
+            <p class="hero-tagline">
+                一个热爱<span class="accent">音乐</span>、<span class="accent">旅行</span>与<span class="accent">滑雪</span>的探索者。<br>
+                在旋律中寻找秩序，在旅途中发现未知。
+            </p>
+            <div class="gold-divider"></div>
+        </div>
+
+        <!-- Hero 右侧：毕业照 -->
+        <div class="hero-photo reveal">
+            <img src="life-photos/毕业照.jpg" alt="毕业照" loading="lazy">
+        </div>
+
+        <!-- Hero 右侧装饰：抽象声波/流线 -->
+        <svg class="hero-decoration" viewBox="0 0 420 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="heroGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.3"/>
+                    <stop offset="100%" stop-color="#c4a35a" stop-opacity="0.15"/>
+                </linearGradient>
+                <linearGradient id="heroGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.15"/>
+                    <stop offset="100%" stop-color="#5b21b6" stop-opacity="0.05"/>
+                </linearGradient>
+            </defs>
+            <!-- 外层大圆环 -->
+            <circle cx="200" cy="220" r="160" stroke="url(#heroGrad1)" stroke-width="0.5" fill="none" opacity="0.5"/>
+            <circle cx="200" cy="220" r="190" stroke="url(#heroGrad2)" stroke-width="0.3" fill="none" opacity="0.3"/>
+            <circle cx="200" cy="220" r="130" stroke="url(#heroGrad1)" stroke-width="0.5" fill="none" opacity="0.4"/>
+            <!-- 流动曲线 - 声波意象 -->
+            <path d="M40 180 Q120 120 180 160 Q240 200 280 140 Q320 80 380 130" stroke="#7c3aed" stroke-width="0.8" fill="none" opacity="0.35"/>
+            <path d="M30 210 Q110 150 170 190 Q230 230 290 170 Q340 120 390 160" stroke="#a78bfa" stroke-width="0.6" fill="none" opacity="0.25"/>
+            <path d="M50 250 Q130 190 180 230 Q240 260 300 200 Q350 160 400 200" stroke="#c4a35a" stroke-width="0.5" fill="none" opacity="0.2"/>
+            <path d="M60 150 Q140 90 190 130 Q250 170 300 110 Q350 50 400 100" stroke="#7c3aed" stroke-width="0.6" fill="none" opacity="0.2"/>
+            <!-- 散布金色粒子 -->
+            <circle cx="180" cy="120" r="1.5" fill="#c4a35a" opacity="0.5"/>
+            <circle cx="280" cy="160" r="1" fill="#c4a35a" opacity="0.4"/>
+            <circle cx="150" cy="280" r="1.2" fill="#c4a35a" opacity="0.35"/>
+            <circle cx="300" cy="300" r="1.5" fill="#c4a35a" opacity="0.3"/>
+            <circle cx="100" cy="200" r="1" fill="#a78bfa" opacity="0.4"/>
+            <circle cx="350" cy="240" r="1.2" fill="#a78bfa" opacity="0.35"/>
+        </svg>
+
+        <div class="scroll-indicator">
+            <span>SCROLL</span>
+            <div class="line"></div>
+        </div>
+    </section>
+
+    <!-- ========================================
+    教育背景
+    ======================================== -->
+    <section class="section" id="about">
+        <p class="section-label reveal">Education</p>
+        <h2 class="section-title reveal">教育背景</h2>
+
+        <div class="education-grid">
+            <div class="edu-text reveal">
+                <p class="edu-year">2022 — 2026</p>
+                <p class="edu-school-name">衢州学院</p>
+                <span class="edu-major">环境工程</span>
+                <p class="edu-detail">
+                    衢州学院坐落于浙江衢州，是一所以工为主、多学科协调发展的应用型本科院校，依托南孔文化与生态资源优势，致力于培养高素质应用型人才。
+                </p>
+                <p class="edu-detail" style="margin-top:12px;">
+                    在这里的四年时光里，我不仅学习了环境工程的专业知识，更找到了自己真正热爱的事物——音乐。校园的每一个角落都见证了我的成长，从课堂到排练室，从实验室到舞台。
+                </p>
+                <div class="gold-divider" style="margin-top:32px;"></div>
+            </div>
+            <div class="edu-images reveal">
+                <div class="edu-image-wrapper">
+                    <img src="university/quzhou-university.jpg" alt="衢州学院" loading="lazy">
+                </div>
+                <div class="edu-image-wrapper">
+                    <img src="university/environmental-engineering.png" alt="环境工程" loading="lazy">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
+    兴趣爱好
+    ======================================== -->
+    <section class="section" id="hobbies">
+        <p class="section-label reveal">Interests</p>
+        <h2 class="section-title reveal">我的热爱</h2>
+        <p class="section-desc reveal">这三件事构成了我生活的底色，每一件都让我成为更好的自己。</p>
+
+        <div class="hobbies-grid">
+            <!-- 音乐 -->
+            <div class="hobby-card reveal">
+                <img src="hobbies/music.jpg" alt="音乐" loading="lazy" style="object-position: 50% 20%;">
+                <div class="hobby-overlay">
+                    <span class="hobby-icon">🎵</span>
+                    <h3 class="hobby-name">音乐</h3>
+                    <p class="hobby-desc">从听到弹，从弹到创作——音乐是我表达自我的语言。</p>
+                </div>
+            </div>
+
+            <!-- 旅游 -->
+            <div class="hobby-card reveal">
+                <img src="hobbies/travel1.jpg" alt="旅游" loading="lazy">
+                <div class="hobby-overlay">
+                    <span class="hobby-icon">✈️</span>
+                    <h3 class="hobby-name">旅游</h3>
+                    <p class="hobby-desc">用脚步丈量世界，在陌生的风景中发现熟悉的感动。</p>
+                </div>
+            </div>
+
+            <!-- 滑雪 -->
+            <div class="hobby-card reveal">
+                <img src="hobbies/ski1.jpg" alt="滑雪" loading="lazy">
+                <div class="hobby-overlay">
+                    <span class="hobby-icon">🏔️</span>
+                    <h3 class="hobby-name">滑雪</h3>
+                    <p class="hobby-desc">在雪道上俯冲的每一秒，都是对自由的极致诠释。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
+    乐队经历 — 核心亮点
+    ======================================== -->
+    <section class="band-section" id="band">
+        <div class="band-inner">
+            <div class="band-header reveal">
+                <div class="band-title-group">
+                    <p class="section-label">Highlight</p>
+                    <h2 class="section-title">做过最牛的事儿——校园乐队</h2>
+                </div>
+                <div class="band-accent-line"></div>
+            </div>
+
+            <div class="band-story">
+                <div class="band-narrative reveal">
+                    <p>
+                        大学期间，我加入并<strong>领导了一支校园乐队</strong>。从排练室里的第一次合奏，到校园音乐节的压轴演出，这段经历是我大学生涯中最闪耀的记忆。
+                    </p>
+                    <p>
+                        作为乐队的组织者和领导者，我学会了如何在有限的时间里协调每个人的节奏，如何在舞台上自信表达，更学会了如何让一群热爱音乐的人形成真正的默契。
+                    </p>
+                    <p>
+                        每一次演出前的紧张准备，每一次台下的欢呼与掌声，都让我深深体会到——<strong>音乐不只是声音，它是连接人与人的桥梁</strong>。
+                    </p>
+                </div>
+                <div class="band-quote reveal">
+                    "音乐不是一个人的独奏，<br>而是一群人的共鸣。"
+                </div>
+            </div>
+
+            <!-- 乐队照片画廊 -->
+            <div class="band-gallery reveal">
+                <div class="gallery-item">
+                    <img src="band/e0b3d3e528653ddf3e41073a22ec4ded.jpg" alt="乐队演出" loading="lazy">
+                </div>
+                <div class="gallery-item">
+                    <img src="band/622591bdee2b3a43d1d4fe1aebe3a767.jpg" alt="乐队排练" loading="lazy">
+                </div>
+                <div class="gallery-item">
+                    <img src="band/4565e44ca97593762a055579111d95ea.jpg" alt="乐队合影" loading="lazy">
+                </div>
+                <div class="gallery-item">
+                    <img src="band/c31f09d37f99665449093695776bcf4e.jpg" alt="乐队瞬间" loading="lazy">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
+    生活剪影
+    ======================================== -->
+    <section class="section" id="life">
+        <p class="section-label reveal">Moments</p>
+        <h2 class="section-title reveal">生活剪影</h2>
+        <p class="section-desc reveal">镜头下的那些瞬间，构成了真实的我。</p>
+
+        <div class="mbti-badge reveal">
+            <span class="mbti-tag">INFJ</span>
+            <span class="mbti-label">提倡者人格 · 安静而坚定的理想主义者</span>
+        </div>
+
+        <div class="life-gallery">
+            <div class="life-photo reveal">
+                <img src="life-photos/自拍.jpg" alt="自拍" loading="lazy">
+                <span class="photo-label">📷 日常</span>
+            </div>
+            <div class="life-photo reveal">
+                <img src="life-photos/吃麦当劳.jpg" alt="吃麦当劳" loading="lazy">
+                <span class="photo-label">🍔 美食时光</span>
+            </div>
+            <div class="life-photo reveal">
+                <img src="life-photos/泡猫咖.jpg" alt="泡猫咖" loading="lazy">
+                <span class="photo-label">🐱 猫咖午后</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
+    联系方式
+    ======================================== -->
+    <section class="contact-section" id="contact">
+        <p class="section-label reveal">Contact</p>
+        <h2 class="section-title reveal">联系方式</h2>
+
+        <div class="contact-grid reveal">
+            <div class="contact-item">
+                <span class="contact-icon">📞</span>
+                <div class="contact-info">
+                    <p class="contact-label">电话</p>
+                    <p class="contact-value">13057706757</p>
+                </div>
+            </div>
+            <div class="contact-item">
+                <span class="contact-icon">💬</span>
+                <div class="contact-info">
+                    <p class="contact-label">微信</p>
+                    <p class="contact-value">Yan1325072031a</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
+    页脚
+    ======================================== -->
+    <footer class="footer">
+        <p>© 2026 <span class="footer-accent">任铭杨</span> · 个人主页</p>
+    </footer>
+
+    <!-- ========================================
+    JavaScript
+    ======================================== -->
+    <script>
+        // —— 导航栏滚动方向感知（下滚隐藏，上滚显示）——
+        const nav = document.getElementById('nav');
+        let lastScrollY = 0;
+        let navHidden = false;
+
+        window.addEventListener('scroll', () => {
+            const currentY = window.scrollY;
+
+            // 背景加深
+            nav.classList.toggle('scrolled', currentY > 60);
+
+            // 超过 300px 后，下滚隐藏、上滚显示
+            if (currentY > 300) {
+                if (currentY > lastScrollY + 10 && !navHidden) {
+                    nav.style.transform = 'translateY(-100%)';
+                    navHidden = true;
+                } else if (currentY < lastScrollY - 10 && navHidden) {
+                    nav.style.transform = 'translateY(0)';
+                    navHidden = false;
+                }
+            } else {
+                nav.style.transform = 'translateY(0)';
+                navHidden = false;
+            }
+
+            lastScrollY = currentY;
+        });
+
+        // —— 导航 transition ——
+        nav.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s, border-color 0.3s';
+
+        // —— 滚动渐入动画 + 交错延迟 ——
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px 0px -40px 0px',
+            threshold: 0.08
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // 为每个 .reveal 元素计算交错延迟
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // 按区块分组计算延迟（同组内逐项递增 80ms）
+        function applyStagger() {
+            const sections = document.querySelectorAll('.section, .hero, .band-section, .contact-section');
+            sections.forEach(section => {
+                const reveals = section.querySelectorAll(':scope > .reveal, :scope .reveal');
+                reveals.forEach((el, i) => {
+                    el.style.setProperty('--delay', `${i * 70}ms`);
+                });
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            applyStagger();
+
+            // 首屏已在视口内的元素立即显示
+            document.querySelectorAll('.reveal').forEach(el => {
+                const rect = el.getBoundingClientRect();
+                if (rect.top < window.innerHeight) {
+                    el.classList.add('visible');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
