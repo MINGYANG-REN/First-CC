@@ -863,43 +863,160 @@
             .band-gallery { gap: 12px; }
         }
 
+        /* ========================================
+           平板端 (768px~1024px)
+           ======================================== */
         @media (max-width: 1024px) {
             .section { padding: 80px 40px; }
-            .hero { padding: 100px 40px 60px; min-height: auto; }
-            .hero-name { font-size: 3rem; }
+            .hero { padding: 100px 40px 60px; min-height: auto; flex-direction: column; text-align: center; }
+            .hero-content { max-width: 100%; }
+            .hero-tagline { max-width: 100%; }
+            .hero-name { font-size: 3.5rem; }
             .hero-decoration { display: none; }
-            .hero-photo { display: none; }
+            /* 毕业照改为居中展示 */
+            .hero-photo {
+                position: relative;
+                right: auto; top: auto;
+                transform: none;
+                width: 260px;
+                height: 320px;
+                margin: 40px auto 0;
+                border-radius: 16px;
+            }
+            .hero-photo::after {
+                background: linear-gradient(135deg, rgba(91, 33, 182, 0.15), transparent 50%);
+            }
+            .hero-photo::before { display: none; }
+            .gold-divider { margin: 32px auto; transform-origin: center; }
+            .nav { padding: 0 32px; }
             .education-grid { grid-template-columns: 1fr; gap: 40px; }
-            .edu-images { order: -1; }
-            .hobbies-grid { grid-template-columns: 1fr 1fr; }
+            .edu-images { order: -1; flex-direction: row; }
+            .edu-images .edu-image-wrapper { flex: 1; aspect-ratio: 4/3; }
+            .hobbies-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
             .hobby-card:nth-child(2) { transform: none; }
             .hobby-card:nth-child(2):hover { transform: translateY(-12px); }
-            .hobby-card { aspect-ratio: 4/5; }
+            .hobby-card { aspect-ratio: 3/4; }
             .band-story { grid-template-columns: 1fr; gap: 40px; }
             .band-gallery { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-            .band-gallery .gallery-item { aspect-ratio: 4/5; }
+            .band-gallery .gallery-item { aspect-ratio: 3/4; }
             .band-header { flex-direction: column; align-items: flex-start; }
             .band-header .band-accent-line { display: none; }
-            .life-gallery { flex-wrap: wrap; gap: 16px; }
+            .band-header .section-title { font-size: 2.6rem; }
+            .life-gallery { flex-wrap: wrap; justify-content: center; gap: 20px; }
             .life-gallery .life-photo { flex: 0 1 220px; }
             .contact-grid { gap: 24px; }
             .nav-links { gap: 24px; }
         }
 
-        @media (max-width: 640px) {
-            .nav { padding: 0 20px; }
-            .hero { padding: 100px 20px 40px; }
-            .section { padding: 60px 20px; }
-            .section-title { font-size: 2rem; }
-            .band-section { padding: 80px 20px; }
-            .band-header .section-title { font-size: 2rem; }
-            .hobbies-grid { grid-template-columns: 1fr; }
-            .life-gallery { flex-wrap: wrap; gap: 10px; }
-            .life-gallery .life-photo { flex: 0 1 160px; }
+        /* ========================================
+           手机端 (≤767px)
+           ======================================== */
+        @media (max-width: 767px) {
+            /* 导航 */
+            .nav { padding: 0 20px; height: 60px; }
+            .nav-logo { font-size: 1.2rem; }
+            .nav-logo .logo-mark { width: 30px; height: 30px; font-size: 0.65rem; }
+            .nav-links { gap: 18px; }
+            .nav-links a { font-size: 0.8rem; }
+
+            /* Hero */
+            .hero {
+                padding: 100px 24px 50px;
+                flex-direction: column;
+                text-align: center;
+                min-height: auto;
+            }
+            .hero-content { max-width: 100%; }
+            .hero-greeting { font-size: 0.8rem; }
+            .hero-name { font-size: 2.8rem; }
+            .hero-tagline { font-size: 1.1rem; max-width: 100%; }
+            .hero-tagline br { display: none; }
+            .hero-decoration { display: none; }
+            .hero-photo {
+                position: relative;
+                right: auto; top: auto;
+                transform: none;
+                width: 200px;
+                height: 250px;
+                margin: 36px auto 0;
+                border-radius: 14px;
+                box-shadow: 0 12px 40px rgba(0,0,0,0.45), 0 0 40px rgba(124, 58, 237, 0.12);
+            }
+            .hero-photo::after {
+                background: linear-gradient(135deg, rgba(91, 33, 182, 0.15), transparent 50%);
+            }
+            .hero-photo::before { display: none; }
+            .gold-divider { margin: 28px auto; transform-origin: center; }
+            .scroll-indicator { bottom: 20px; }
+
+            /* 通用区块 */
+            .section { padding: 64px 24px; }
+            .section-label { font-size: 0.7rem; }
+            .section-title { font-size: 1.8rem; }
+            .section-desc { font-size: 0.95rem; }
+
+            /* 教育背景 */
+            .education-grid { grid-template-columns: 1fr; gap: 28px; }
+            .edu-images { order: -1; flex-direction: column; gap: 12px; }
+            .edu-images .edu-image-wrapper { aspect-ratio: 3/2; }
+            .edu-school-name { font-size: 1.7rem; }
+            .edu-detail { font-size: 0.95rem; }
+
+            /* 兴趣爱好 */
+            .hobbies-grid { grid-template-columns: 1fr; gap: 16px; max-width: 360px; margin-left: auto; margin-right: auto; }
+            .hobby-card { aspect-ratio: 4/5; }
+            .hobby-card:nth-child(2) { transform: none; }
+            .hobby-card:nth-child(2):hover { transform: translateY(-10px); }
+            .hobby-name { font-size: 1.4rem; }
+            .hobby-desc { font-size: 0.8rem; opacity: 1; transform: none; }
+
+            /* 乐队 */
+            .band-section { padding: 72px 24px 60px; }
+            .band-header { flex-direction: column; align-items: flex-start; margin-bottom: 36px; }
+            .band-header .band-accent-line { display: none; }
+            .band-header .section-title { font-size: 2rem; line-height: 1.2; }
+            .band-story { grid-template-columns: 1fr; gap: 28px; margin-bottom: 40px; }
+            .band-narrative { font-size: 0.95rem; line-height: 1.8; }
+            .band-quote { font-size: 1.2rem; }
+            .band-gallery { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .band-gallery .gallery-item { aspect-ratio: 3/4; }
+
+            /* 生活剪影 */
+            .mbti-badge { flex-direction: column; gap: 6px; padding: 14px 20px; text-align: center; }
+            .mbti-label { font-size: 0.82rem; }
+            .life-gallery {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+                max-width: 100%;
+            }
+            .life-gallery .life-photo {
+                flex: none;
+                width: 100%;
+            }
+            .photo-label { font-size: 0.7rem; bottom: 8px; left: 8px; opacity: 1; transform: none; }
+
+            /* 联系方式 */
+            .contact-section { padding: 60px 24px 40px; }
+            .contact-grid { flex-direction: column; align-items: center; gap: 12px; }
+            .contact-item { width: 100%; max-width: 300px; justify-content: center; }
+
+            /* 页脚 */
+            .footer { padding: 32px 24px; font-size: 0.75rem; }
+        }
+
+        /* ========================================
+           小屏手机 (≤400px)
+           ======================================== */
+        @media (max-width: 400px) {
+            .hero-name { font-size: 2.4rem; }
+            .hero-tagline { font-size: 1rem; }
+            .hero-photo { width: 170px; height: 215px; }
+            .nav-links { gap: 12px; }
+            .nav-links a { font-size: 0.75rem; }
             .band-gallery { grid-template-columns: 1fr; }
             .band-gallery .gallery-item { aspect-ratio: 4/3; }
-            .education-grid { gap: 30px; }
-            .contact-grid { flex-direction: column; align-items: center; gap: 12px; }
+            .life-gallery { grid-template-columns: repeat(3, 1fr); gap: 6px; }
         }
     </style>
 </head>
